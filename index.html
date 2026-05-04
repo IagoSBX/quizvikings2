@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Quiz Vikings ⚡</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading-screen">
+  <div class="loader-ring"></div>
+  <div class="loader-text">Carregando banco de questões...</div>
+</div>
+
+<!-- GLOW ORBS -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- MODAL CONFIRMAR PAGAMENTO -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal-box">
+    <div class="modal-title">Confirmar Pagamento</div>
+    <div class="modal-body">
+      Ao confirmar, você declara ter realizado o pagamento de <strong style="color:var(--gold)">R$ 20,00</strong> e terá acesso completo ao aplicativo Quiz Vikings.<br><br>
+      Em caso de problemas, entre em contato: <strong>suporte@quizvikings.app</strong>
+    </div>
+    <div class="modal-btns">
+      <button class="btn btn-ghost btn-sm" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-success btn-sm" style="flex:1" onclick="finalizarPagamento()">✅ Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">⚡ Quiz Vikings</div>
+  <div class="nav-links">
+    <button class="nav-btn" data-nav="home"    onclick="showScreen('home')">Início</button>
+    <button class="nav-btn" data-nav="ranking" onclick="abrirRanking()">Ranking</button>
+    <button class="nav-btn" data-nav="about"   onclick="showScreen('about')">Sobre</button>
+    <button class="nav-btn highlight" id="btn-premium" onclick="abrirPagamento()">⭐ Obter App R$20</button>
+  </div>
+  <div class="sponsors-nav">
+    <span class="spbadge spbadge-w">WIZARD</span>
+    <span class="spbadge spbadge-f">FIEBTECH</span>
+  </div>
+</div>
+
+<div class="wrapper">
+
+  <!-- ════════════════════════════════════
+       SCREEN: HOME
+       ════════════════════════════════════ -->
+  <div id="screen-home" class="screen">
+    <div class="card">
+      <div class="hero">
+        <div class="hero-tag">🎓 Plataforma Educacional</div>
+        <h1>Teste seus<br>conhecimentos</h1>
+        <p>Quiz com banco de questões em Biologia, Matemática, Física, História, Português e Geografia. Três níveis de dificuldade.</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Seu Nome</label>
+        <input type="text" id="nome" placeholder="Como quer aparecer no ranking?">
+      </div>
+
+      <div class="selects-row">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Matéria</label>
+          <select id="sel-materia">
+            <option value="biologia">🧬 Biologia</option>
+            <option value="matematica">📐 Matemática</option>
+            <option value="fisica">⚛️ Física</option>
+            <option value="historia">📜 História</option>
+            <option value="portugues">📚 Português</option>
+            <option value="geografia">🌎 Geografia</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Dificuldade</label>
+          <select id="sel-dific">
+            <option value="facil">🟢 Fácil</option>
+            <option value="medio">🟡 Médio</option>
+            <option value="dificil">🔴 Difícil</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" onclick="iniciar()">▶ Iniciar Quiz</button>
+
+      <div class="section-head">🏆 Ranking</div>
+      <div class="ranking-list" id="home-ranking">
+        <div class="rank-empty">Nenhum resultado ainda. Seja o primeiro! 🚀</div>
+      </div>
+
+      <div class="sp-label">Patrocinadores Oficiais</div>
+      <div class="sponsor-strip">
+        <div class="sp-card sp-card-w">
+          <span class="sp-name sp-name-w">WIZARD</span>
+          <span class="sp-tag">Escola de Idiomas #1</span>
+        </div>
+        <div class="sp-card sp-card-f">
+          <span class="sp-name sp-name-f">FIEBTECH</span>
+          <span class="sp-tag">Tecnologia & Inovação</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       SCREEN: QUIZ
+       ════════════════════════════════════ -->
+  <div id="screen-quiz" class="screen">
+    <div class="card">
+      <div class="progress-wrap">
+        <div class="progress-meta">
+          <span id="q-counter">Pergunta 1 de 10</span>
+          <span id="q-score">0 ✓</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="q-progress" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="materia-chip" id="q-chip">🧬 Biologia</div>
+      <div class="question-text" id="q-text">Carregando questão...</div>
+      <div class="options-list" id="q-options"></div>
+
+      <div class="quiz-nav btns-row">
+        <button class="btn btn-ghost" id="btn-prev" onclick="questaoAnterior()" disabled>← Anterior</button>
+        <button class="btn btn-primary" id="btn-next" onclick="proximaQuestao()">Próximo →</button>
+      </div>
+    </div>
+
+    <!-- Sponsor bottom bar -->
+    <div style="display:flex;gap:8px;margin-top:12px;opacity:0.6">
+      <div style="flex:1;padding:8px;background:rgba(214,48,49,0.06);border:1px solid rgba(214,48,49,0.15);border-radius:8px;text-align:center;font-size:0.72rem;color:#e17070;font-weight:700">WIZARD</div>
+      <div style="flex:1;padding:8px;background:rgba(9,132,227,0.06);border:1px solid rgba(9,132,227,0.15);border-radius:8px;text-align:center;font-size:0.72rem;color:#74b9ff;font-weight:700">FIEBTECH</div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       SCREEN: RESULT
+       ════════════════════════════════════ -->
+  <div id="screen-result" class="screen">
+    <div class="card">
+      <div class="result-hero">
+        <div class="score-ring hi" id="r-ring">
+          <span class="score-num" id="r-num">0</span>
+          <span class="score-of"  id="r-of">de 10</span>
+        </div>
+        <div class="result-name" id="r-name">Jogador</div>
+        <div class="result-msg"  id="r-msg">Resultado</div>
+      </div>
+
+      <div class="section-head">📋 Revisão das Questões</div>
+      <div class="summary-list" id="r-summary"></div>
+
+      <div class="btns-row" style="margin-top:20px">
+        <button class="btn btn-success" onclick="reiniciar()">🔄 Jogar Novamente</button>
+        <button class="btn btn-ghost"   onclick="abrirRanking()">🏆 Ranking</button>
+      </div>
+
+      <div class="sp-label">Parceiros deste quiz</div>
+      <div class="sponsor-strip">
+        <div class="sp-card sp-card-w">
+          <span class="sp-name sp-name-w">WIZARD</span>
+          <span class="sp-tag">Aprenda idiomas conosco</span>
+        </div>
+        <div class="sp-card sp-card-f">
+          <span class="sp-name sp-name-f">FIEBTECH</span>
+          <span class="sp-tag">O futuro da educação tech</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       SCREEN: RANKING
+       ════════════════════════════════════ -->
+  <div id="screen-ranking" class="screen">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div>
+          <div style="font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800">🏆 Ranking Global</div>
+          <div style="color:var(--muted);font-size:0.82rem;margin-top:3px">Melhores resultados de todos os tempos</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="showScreen('home')">← Voltar</button>
+      </div>
+
+      <div class="ranking-list" id="full-ranking">
+        <div class="rank-empty">Nenhum resultado ainda.</div>
+      </div>
+
+      <div style="margin-top:20px">
+        <button class="btn btn-primary" onclick="showScreen('home')">▶ Jogar Agora</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       SCREEN: PAYMENT
+       ════════════════════════════════════ -->
+  <div id="screen-payment" class="screen">
+    <div class="card">
+      <div class="pay-hero">
+        <div class="pay-icon">⭐</div>
+        <h2>Quiz Vikings — App Completo</h2>
+        <p>Acesso vitalício a todas as matérias, questões exclusivas, sem anúncios e suporte prioritário. Pagamento único.</p>
+      </div>
+
+      <div class="price-tag">
+        <div class="price-amount">R$ 20</div>
+        <div class="price-label">pagamento único • acesso vitalício</div>
+        <div class="price-once">Sem assinatura mensal. Sem taxas ocultas.</div>
+      </div>
+
+      <div class="features-list">
+        <div class="feature-item"><span class="feature-icon">🔓</span><span>Acesso a <strong>todas as matérias</strong> sem restrição</span></div>
+        <div class="feature-item"><span class="feature-icon">📊</span><span>Histórico e estatísticas detalhadas</span></div>
+        <div class="feature-item"><span class="feature-icon">🚫</span><span>Sem propagandas ou interrupções</span></div>
+        <div class="feature-item"><span class="feature-icon">🆕</span><span>Novas questões mensais exclusivas</span></div>
+        <div class="feature-item"><span class="feature-icon">🤝</span><span>Parceiro: <strong style="color:#e17070">WIZARD</strong> + <strong style="color:#74b9ff">FIEBTECH</strong></span></div>
+        <div class="feature-item"><span class="feature-icon">📱</span><span>Funciona offline no celular</span></div>
+      </div>
+
+      <div class="section-head">Forma de Pagamento</div>
+
+      <div class="pay-methods">
+        <div class="pay-method" data-method="pix" onclick="selecionarMetodo('pix')">
+          <span class="pay-method-icon">⚡</span>
+          <span class="pay-method-name">PIX</span>
+          <span class="pay-method-sub">Aprovação imediata</span>
+        </div>
+        <div class="pay-method" data-method="card" onclick="selecionarMetodo('card')">
+          <span class="pay-method-icon">💳</span>
+          <span class="pay-method-name">Cartão</span>
+          <span class="pay-method-sub">Crédito ou débito</span>
+        </div>
+      </div>
+
+      <!-- PIX AREA -->
+      <div class="pix-area" id="pix-area">
+        <div style="font-weight:700;margin-bottom:12px;font-size:0.9rem">Escaneie o QR Code ou copie a chave</div>
+        <div class="pix-qr">
+          <!-- QR Code SVG simulado -->
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <rect width="100" height="100" fill="white"/>
+            <!-- Corner squares -->
+            <rect x="5" y="5" width="25" height="25" rx="2" fill="none" stroke="#000" stroke-width="3"/>
+            <rect x="10" y="10" width="15" height="15" rx="1" fill="#000"/>
+            <rect x="70" y="5" width="25" height="25" rx="2" fill="none" stroke="#000" stroke-width="3"/>
+            <rect x="75" y="10" width="15" height="15" rx="1" fill="#000"/>
+            <rect x="5" y="70" width="25" height="25" rx="2" fill="none" stroke="#000" stroke-width="3"/>
+            <rect x="10" y="75" width="15" height="15" rx="1" fill="#000"/>
+            <!-- Data pattern -->
+            <rect x="35" y="5"  width="5" height="5" fill="#000"/>
+            <rect x="45" y="5"  width="5" height="5" fill="#000"/>
+            <rect x="55" y="5"  width="5" height="5" fill="#000"/>
+            <rect x="35" y="15" width="5" height="5" fill="#000"/>
+            <rect x="55" y="15" width="5" height="5" fill="#000"/>
+            <rect x="40" y="25" width="5" height="5" fill="#000"/>
+            <rect x="50" y="25" width="5" height="5" fill="#000"/>
+            <rect x="60" y="25" width="5" height="5" fill="#000"/>
+            <rect x="5"  y="35" width="5" height="5" fill="#000"/>
+            <rect x="15" y="35" width="5" height="5" fill="#000"/>
+            <rect x="25" y="35" width="5" height="5" fill="#000"/>
+            <rect x="35" y="35" width="5" height="5" fill="#000"/>
+            <rect x="50" y="35" width="5" height="5" fill="#000"/>
+            <rect x="60" y="35" width="5" height="5" fill="#000"/>
+            <rect x="70" y="35" width="5" height="5" fill="#000"/>
+            <rect x="80" y="35" width="5" height="5" fill="#000"/>
+            <rect x="90" y="35" width="5" height="5" fill="#000"/>
+            <rect x="5"  y="45" width="5" height="5" fill="#000"/>
+            <rect x="20" y="45" width="5" height="5" fill="#000"/>
+            <rect x="35" y="45" width="5" height="5" fill="#000"/>
+            <rect x="45" y="45" width="5" height="5" fill="#000"/>
+            <rect x="55" y="45" width="5" height="5" fill="#000"/>
+            <rect x="65" y="45" width="5" height="5" fill="#000"/>
+            <rect x="75" y="45" width="5" height="5" fill="#000"/>
+            <rect x="90" y="45" width="5" height="5" fill="#000"/>
+            <rect x="10" y="55" width="5" height="5" fill="#000"/>
+            <rect x="25" y="55" width="5" height="5" fill="#000"/>
+            <rect x="40" y="55" width="5" height="5" fill="#000"/>
+            <rect x="50" y="55" width="5" height="5" fill="#000"/>
+            <rect x="60" y="55" width="5" height="5" fill="#000"/>
+            <rect x="70" y="55" width="5" height="5" fill="#000"/>
+            <rect x="85" y="55" width="5" height="5" fill="#000"/>
+            <rect x="35" y="65" width="5" height="5" fill="#000"/>
+            <rect x="45" y="65" width="5" height="5" fill="#000"/>
+            <rect x="60" y="65" width="5" height="5" fill="#000"/>
+            <rect x="75" y="65" width="5" height="5" fill="#000"/>
+            <rect x="90" y="65" width="5" height="5" fill="#000"/>
+            <rect x="35" y="75" width="5" height="5" fill="#000"/>
+            <rect x="50" y="75" width="5" height="5" fill="#000"/>
+            <rect x="65" y="75" width="5" height="5" fill="#000"/>
+            <rect x="80" y="75" width="5" height="5" fill="#000"/>
+            <rect x="40" y="85" width="5" height="5" fill="#000"/>
+            <rect x="55" y="85" width="5" height="5" fill="#000"/>
+            <rect x="70" y="85" width="5" height="5" fill="#000"/>
+            <rect x="85" y="85" width="5" height="5" fill="#000"/>
+            <rect x="90" y="90" width="5" height="5" fill="#000"/>
+          </svg>
+        </div>
+        <div style="font-size:0.78rem;color:#666;margin-bottom:6px">Chave PIX:</div>
+        <div class="pix-key">quizvikings@pagamentos.com.br</div>
+        <div style="font-size:0.78rem;color:#888;margin-bottom:6px">Valor: <strong style="color:#000">R$ 20,00</strong></div>
+        <span class="pix-copy" onclick="copiarChave()">📋 Copiar chave PIX</span>
+        <div style="margin-top:10px;font-size:0.75rem;color:#888">Após pagar, clique em "Confirmar Pagamento"</div>
+      </div>
+
+      <!-- CARD AREA -->
+      <div class="card-area" id="card-area">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Número do Cartão</label>
+            <input type="text" placeholder="0000 0000 0000 0000" maxlength="19"
+              oninput="this.value=this.value.replace(/\D/g,'').replace(/(.{4})/g,'$1 ').trim()">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="form-group" style="margin:0">
+              <label class="form-label">Validade</label>
+              <input type="text" placeholder="MM/AA" maxlength="5"
+                oninput="this.value=this.value.replace(/\D/g,'').replace(/^(\d{2})(\d)/,'$1/$2')">
+            </div>
+            <div class="form-group" style="margin:0">
+              <label class="form-label">CVV</label>
+              <input type="text" placeholder="123" maxlength="4"
+                oninput="this.value=this.value.replace(/\D/g,'')">
+            </div>
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="form-label">Nome no Cartão</label>
+            <input type="text" placeholder="NOME SOBRENOME">
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-gold" onclick="confirmarPagamento()" style="font-size:1rem">
+        💳 Pagar R$ 20,00 — Acesso Vitalício
+      </button>
+
+      <div class="security-note">
+        🔒 Pagamento seguro e criptografado • Suporte: suporte@quizvikings.app
+      </div>
+
+      <button class="btn btn-ghost btn-gap" onclick="showScreen('home')">← Voltar</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       SCREEN: SUCCESS (PÓS-PAGAMENTO)
+       ════════════════════════════════════ -->
+  <div id="screen-success" class="screen">
+    <div class="card">
+      <div class="success-anim">
+        <div class="success-icon">🎉</div>
+        <div class="success-title">Pagamento Confirmado!</div>
+        <div class="success-sub">Bem-vindo ao Quiz Vikings Premium. Acesso vitalício ativado.</div>
+      </div>
+
+      <div style="margin:24px 0;display:flex;flex-direction:column;gap:10px">
+        <div class="feature-item"><span class="feature-icon">✅</span><span>Todas as matérias desbloqueadas</span></div>
+        <div class="feature-item"><span class="feature-icon">✅</span><span>Questões exclusivas liberadas</span></div>
+        <div class="feature-item"><span class="feature-icon">✅</span><span>Sem anúncios ativado</span></div>
+        <div class="feature-item"><span class="feature-icon">✅</span><span>Suporte prioritário</span></div>
+      </div>
+
+      <div style="background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px;margin-bottom:20px;font-size:0.82rem;color:var(--muted)">
+        Um e-mail de confirmação será enviado em breve. Guarde seu comprovante de pagamento.<br>
+        <strong style="color:var(--text)">ID da compra:</strong> <span style="font-family:monospace;color:var(--cyan)">#CQ-<span id="purchase-id"></span></span>
+      </div>
+
+      <button class="btn btn-primary" onclick="showScreen('home')">▶ Começar a Jogar</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       SCREEN: ABOUT
+       ════════════════════════════════════ -->
+  <div id="screen-about" class="screen">
+    <div class="card">
+      <div style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:800;margin-bottom:4px">⚡ Sobre o Quiz Vikings</div>
+      <div style="color:var(--muted);font-size:0.85rem;margin-bottom:24px">Plataforma educacional de quiz interativo</div>
+
+      <div class="stat-grid">
+        <div class="stat-box">
+          <div class="stat-val">6</div>
+          <div class="stat-label">Matérias</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val">200+</div>
+          <div class="stat-label">Questões</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val">3</div>
+          <div class="stat-label">Dificuldades</div>
+        </div>
+      </div>
+
+      <div class="about-section">
+        <h3>O que é o Quiz Vikings?</h3>
+        <p>O Quiz Vikings é uma plataforma educacional gamificada voltada para estudantes do ensino médio e universitário. Com questões cuidadosamente elaboradas em 6 matérias diferentes, ajudamos estudantes a se preparar de forma lúdica e eficiente.</p>
+      </div>
+
+      <div class="about-section">
+        <h3>📚 Matérias Disponíveis</h3>
+        <p>🧬 Biologia &nbsp;|&nbsp; 📐 Matemática &nbsp;|&nbsp; ⚛️ Física &nbsp;|&nbsp; 📜 História &nbsp;|&nbsp; 📚 Português &nbsp;|&nbsp; 🌎 Geografia</p>
+        <p style="margin-top:8px">Cada matéria conta com questões nos níveis Fácil, Médio e Difícil, garantindo desafio para todos os perfis.</p>
+      </div>
+
+      <div class="about-section">
+        <h3>🏆 Sistema de Ranking</h3>
+        <p>Compete com outros estudantes no ranking global. Sua pontuação é calculada com base na porcentagem de acertos. Quanto mais você joga, mais sobe no ranking!</p>
+      </div>
+
+      <div class="section-head">Nossos Patrocinadores</div>
+      <div class="sp-full">
+        <div class="sp-full-card w">
+          <div>
+            <div class="sp-logo w" style="font-size:1.3rem">🎓 WIZARD</div>
+            <div class="sp-info"><p>A maior rede de escolas de idiomas do Brasil. Com o Wizard você aprende inglês, espanhol, italiano e muito mais com metodologia comprovada.</p></div>
+          </div>
+        </div>
+        <div class="sp-full-card f">
+          <div>
+            <div class="sp-logo f" style="font-size:1.3rem">🖥️ FIEBTECH</div>
+            <div class="sp-info"><p>Empresa de tecnologia e inovação dedicada ao futuro da educação. Soluções digitais que transformam o aprendizado.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:24px;padding:16px;background:var(--card2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:0.82rem;color:var(--muted)">
+        📧 Contato: <a href="mailto:suporte@quizvikings.app" style="color:var(--accent)">suporte@quizvikings.app</a><br>
+        🌐 Versão 2.0 • 2025 • Quiz Vikings<br>
+        <button onclick="abrirPagamento()" style="margin-top:10px;background:none;border:1px solid var(--border2);color:var(--gold);padding:8px 16px;border-radius:8px;cursor:pointer;font-size:0.82rem;font-family:'DM Sans',sans-serif">⭐ Obter App Completo por R$20</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /wrapper -->
+
+<script src="js/app.js"></script>
+<script>
+  // Generate purchase ID on success
+  document.addEventListener('DOMContentLoaded', () => {
+    const pid = document.getElementById('purchase-id');
+    if (pid) pid.textContent = Math.random().toString(36).substr(2,8).toUpperCase();
+  });
+</script>
+</body>
+</html>
